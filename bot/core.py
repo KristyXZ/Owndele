@@ -14,7 +14,6 @@ user_client = Client("user", session_string=SESSION_STRING, api_id=API_ID, api_h
 
 delete_times = {}
 
-# ✅ Your command handler must be defined here
 @bot.on_message(filters.command("start") & filters.private)
 async def start_handler(client, message):
     logger.info("Start command triggered.")
@@ -97,5 +96,5 @@ async def user_delete_handler(_, message: Message):
 
 async def start_bot():
     await bot.start()
-    await user.start()
+    await user_client.start()
     logger.info("Both clients started.")
