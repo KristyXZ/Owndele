@@ -3,7 +3,6 @@ import logging
 from pyrogram import Client, filters
 from pyrogram.enums import ChatType
 from pyrogram.types import Message, ChatPrivileges
-from pyrogram.idle import idle
 
 from bot.config import BOT_TOKEN, API_ID, API_HASH, SESSION_STRING
 
@@ -17,7 +16,7 @@ delete_times = {}
 
 @bot.on_message(filters.command("start") & filters.private)
 async def start_cmd(_, message: Message):
-    await message.reply("Welcome to Auto Delete Bot!\nUse /set_time <seconds> in your group.")
+    await message.reply("Welcome to Auto Delete Bot!\\nUse /set_time <seconds> in your group.")
 
 @bot.on_message(filters.command("set_time") & filters.group)
 async def set_time_cmd(_, message: Message):
@@ -101,4 +100,3 @@ async def start_bot():
     await asyncio.Event().wait()  # Keeps the bot running
     await bot.stop()
     await user_client.stop()
-
