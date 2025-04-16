@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from aiohttp import web
 from pyrogram import Client, filters
 from pyrogram.types import Message, ChatPrivileges
@@ -15,7 +16,6 @@ delete_times = {}
 
 @bot.on_message(filters.command("start") & filters.private)
 async def start_handler(client, message):
-    logger.info("Start command triggered.")
     await message.reply("✅ Hello! Bot is working.")
 
 @bot.on_message(filters.command("set_time") & filters.group)
@@ -28,9 +28,7 @@ async def set_time_cmd(_, message: Message):
 
         try:
             await user_client.join_chat(chat_id)
-            logger.info(f"User joined chat {chat_id}")
         except Exception as e:
-            logger.warning(f"User failed to join: {e}")
             await message.reply(f"User could not join group: {e}")
             return
 
@@ -52,7 +50,6 @@ async def set_time_cmd(_, message: Message):
             )
             await message.reply("✅ User joined and promoted to admin.")
         except Exception as e:
-            logger.warning(f"Promotion failed: {e}")
             await message.reply(f"User joined, but promotion failed: {e}")
 
     except:
@@ -93,23 +90,27 @@ async def user_delete_handler(_, message: Message):
         except Exception as e:
             logger.warning(f"User failed to delete message {message.id}: {e}")
 
-# Health check server for Koyeb
+# Health check
 async def healthcheck(request):
     return web.Response(text="OK")
 
 async def start_webserver():
-    app = web.Application()
-    app.router.add_get("/", healthcheck)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
-    await site.start()
+    port = int(os.getenv("PORT", 8080))  # Use env PORT or default to 8080
+    try:
+        app = web.Application()
+        app.router.add_get("/", healthcheck)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        await site.start()
+        logger.info(f"Web server running on port {port}")
+    except OSError as e:
+        logger.warning(f"Webserver failed to bind port {port}: {e}")
 
 async def start_bot():
     await bot.start()
     await user_client.start()
     logger.info("Both clients started.")
 
-    await start_webserver()  # Start HTTP server for health check
-
-    await asyncio.Event().wait()  # Keep running
+    await start_webserver()
+    await asyncio.Event().wait()
