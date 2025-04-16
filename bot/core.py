@@ -14,9 +14,11 @@ user_client = Client("user", session_string=SESSION_STRING, api_id=API_ID, api_h
 
 delete_times = {}
 
+# ✅ Your command handler must be defined here
 @bot.on_message(filters.command("start") & filters.private)
-async def start_cmd(_, message: Message):
-    await message.reply("Welcome to Auto Delete Bot!\\nUse /set_time <seconds> in your group.")
+async def start_handler(client, message):
+    logger.info("Start command triggered.")
+    await message.reply("✅ Hello! Bot is working.")
 
 @bot.on_message(filters.command("set_time") & filters.group)
 async def set_time_cmd(_, message: Message):
@@ -95,8 +97,5 @@ async def user_delete_handler(_, message: Message):
 
 async def start_bot():
     await bot.start()
-    await user_client.start()
+    await user.start()
     logger.info("Both clients started.")
-    await asyncio.Event().wait()  # Keeps the bot running
-    await bot.stop()
-    await user_client.stop()
