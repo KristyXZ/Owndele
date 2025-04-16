@@ -1,9 +1,8 @@
 import asyncio
 import logging
+from aiohttp import web
 from pyrogram import Client, filters
-from pyrogram.enums import ChatType
 from pyrogram.types import Message, ChatPrivileges
-
 from bot.config import BOT_TOKEN, API_ID, API_HASH, SESSION_STRING
 
 logging.basicConfig(level=logging.INFO)
@@ -51,26 +50,26 @@ async def set_time_cmd(_, message: Message):
                     can_manage_video_chats=True
                 )
             )
-            await message.reply("User joined and promoted to admin.")
+            await message.reply("✅ User joined and promoted to admin.")
         except Exception as e:
             logger.warning(f"Promotion failed: {e}")
             await message.reply(f"User joined, but promotion failed: {e}")
 
     except:
-        await message.reply("Usage: /set_time <seconds>")
+        await message.reply("⚠️ Usage: /set_time <seconds>")
 
 @bot.on_message(filters.command("get_time") & filters.group)
 async def get_time_cmd(_, message: Message):
     seconds = delete_times.get(message.chat.id)
     if seconds:
-        await message.reply(f"Messages will be deleted after {seconds} seconds.")
+        await message.reply(f"⏲ Messages will be deleted after {seconds} seconds.")
     else:
-        await message.reply("No delete time set. Use /set_time <seconds>.")
+        await message.reply("❌ No delete time set. Use /set_time <seconds>.")
 
 @bot.on_message(filters.command("remove") & filters.group)
 async def remove_cmd(_, message: Message):
     delete_times.pop(message.chat.id, None)
-    await message.reply("Auto delete disabled for this group.")
+    await message.reply("🗑 Auto delete disabled for this group.")
 
 @bot.on_message(filters.group)
 async def bot_delete_handler(_, message: Message):
@@ -94,7 +93,23 @@ async def user_delete_handler(_, message: Message):
         except Exception as e:
             logger.warning(f"User failed to delete message {message.id}: {e}")
 
+# Health check server for Koyeb
+async def healthcheck(request):
+    return web.Response(text="OK")
+
+async def start_webserver():
+    app = web.Application()
+    app.router.add_get("/", healthcheck)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    await site.start()
+
 async def start_bot():
     await bot.start()
     await user_client.start()
     logger.info("Both clients started.")
+
+    await start_webserver()  # Start HTTP server for health check
+
+    await asyncio.Event().wait()  # Keep running
