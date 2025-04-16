@@ -98,6 +98,7 @@ async def start_bot():
     await bot.start()
     await user_client.start()
     logger.info("Both clients started.")
-    await idle()
+    await asyncio.Event().wait()  # Keeps the bot running
     await bot.stop()
     await user_client.stop()
+
