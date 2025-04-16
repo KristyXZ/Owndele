@@ -24,12 +24,12 @@ async def set_time_cmd(_, message: Message):
         seconds = int(message.text.split(maxsplit=1)[1])
         chat_id = message.chat.id
         delete_times[chat_id] = seconds
-        await message.reply(f"Messages will be deleted after {seconds} seconds.")
+        await message.reply(f"🕒 Messages will be deleted after {seconds} seconds.")
 
         try:
             await user_client.join_chat(chat_id)
         except Exception as e:
-            await message.reply(f"User could not join group: {e}")
+            await message.reply(f"❌ User could not join group: {e}")
             return
 
         try:
@@ -50,9 +50,8 @@ async def set_time_cmd(_, message: Message):
             )
             await message.reply("✅ User joined and promoted to admin.")
         except Exception as e:
-            await message.reply(f"User joined, but promotion failed: {e}")
-
-    except:
+            await message.reply(f"✅ User joined, but promotion failed: {e}")
+    except Exception as e:
         await message.reply("⚠️ Usage: /set_time <seconds>")
 
 @bot.on_message(filters.command("get_time") & filters.group)
@@ -90,27 +89,7 @@ async def user_delete_handler(_, message: Message):
         except Exception as e:
             logger.warning(f"User failed to delete message {message.id}: {e}")
 
-# Health check
-async def healthcheck(request):
-    return web.Response(text="OK")
-
-async def start_webserver():
-    port = int(os.getenv("PORT", 8080))  # Use env PORT or default to 8080
-    try:
-        app = web.Application()
-        app.router.add_get("/", healthcheck)
-        runner = web.AppRunner(app)
-        await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", port)
-        await site.start()
-        logger.info(f"Web server running on port {port}")
-    except OSError as e:
-        logger.warning(f"Webserver failed to bind port {port}: {e}")
-
 async def start_bot():
     await bot.start()
     await user_client.start()
-    logger.info("Both clients started.")
-
-    await start_webserver()
-    await asyncio.Event().wait()
+    logger.info("✅ Both clients started and handlers are active.")
