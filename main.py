@@ -1,4 +1,5 @@
-from auto_delete_bot.bot import run
+import asyncio
+from bot.core import start_bot
 
 if __name__ == "__main__":
-    run()
+    asyncio.run(start_bot())
